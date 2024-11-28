@@ -40,10 +40,7 @@ class Chromosome:
         child = Chromosome(self.targetMelody, self.numOfRows, self.noteRange, self.timeRange)
         child.genes = childGenes
         
-        #Ensure time values in child match target time values
-        child.genes = [
-            [note, round(self.targetMelody[i][1], 1)] for i, (note, time) in enumerate(child.genes)
-        ]
+        child.calculateFitness()
         
         return child
     
