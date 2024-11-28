@@ -1,57 +1,66 @@
 import random
 
 class Chromosome:
-    # Initializing a chromosome with random notes, range C4 to B4
-    def __init__(self, targetMelody, numOfRows, numOfCols, noteRange=(60,72), bestGenes=None):
+    def __init__(self, targetMelody, numOfRows, noteRange=(60, 72), timeRange=(0.5, 1.5), bestGenes=None):
         self.noteRange = noteRange
-        self.numOfRows = numOfRows # Number of rows in the 2D array
-        self.numOfCols = numOfCols # Number of columns
+        self.timeRange = timeRange
+        self.numOfRows = numOfRows
         self.targetMelody = targetMelody
-
+        
+        # Initialize genes with random values if no bestGenes are provided
         if bestGenes is not None:
             self.genes = bestGenes
         else:
             self.genes = self.initializeGenes()
 
-        self.fitnessScore = 0 # 0 by default
+        self.fitnessScore = 0
         self.calculateFitness()
 
     def initializeGenes(self):
-        return [random.randint(self.noteRange[0], self.noteRange[1]) for _ in range(self.numOfCols)
-                for _ in range(self.numOfRows)]
+        # Generate random pairs of [note, time] within the specified ranges - it is a flatened 1d array ie pairs
+        return [
+            [random.randint(self.noteRange[0], self.noteRange[1]), round(self.targetMelody[i][1], 1)]
+            for i in range(self.numOfRows)
+        ]
     
     def mutate(self, mutationRate=0.1):
         if random.random() < mutationRate:
-            randomRow = random.randint(0, self.numOfRows - 1)
-            randomCol = random.randint(0, self.numOfCols - 1)
-            self.genes[randomRow][randomCol] = random.randint(self.noteRange[0], self.noteRange[1])
+            randomIndex = random.randint(0, self.numOfRows - 1)
+            self.genes[randomIndex] = [
+                random.randint(self.noteRange[0], self.noteRange[1]),
+                round(self.targetMelody[randomIndex][1], 1) 
+            ]
             self.fitnessScore = self.calculateFitness()
 
     def crossover(self, mate):
-        crossoverRow = random.randint(1, self.numOfNotes - 1)
-        crossoverCol = random.randint(1, self.numOfCols - 1)
+        crossoverPoint = random.randint(1, self.numOfRows - 1)
         
-        childGenes = [
-            self.genes[row][:crossoverCol] + mate.genes[row][crossoverCol:]
+        childGenes = self.genes[:crossoverPoint] + mate.genes[crossoverPoint:]
 
-            if row == crossoverRow else self.genes[row]
-            for row in range(self.numOfRows)
-        ]
-
-        child = Chromosome(self.targetMelody, self.numOfRows, self.numOfCols, self.noteRange)
+        child = Chromosome(self.targetMelody, self.numOfRows, self.noteRange, self.timeRange)
         child.genes = childGenes
+        
+        #Ensure time values in child match target time values
+        child.genes = [
+            [note, round(self.targetMelody[i][1], 1)] for i, (note, time) in enumerate(child.genes)
+        ]
         
         return child
     
     def calculateFitness(self):
-        # targetMelody will be an array of MIDI notes representing the target melody
+        #Calculate the fitness based on matching both note and time..
         self.fitnessScore = sum(
             1 for i in range(self.numOfRows)
-            for j in range(self.numOfCols)
-            if self.genes[i][j] == self.targetMelody[i][j]
+            if (self.genes[i][0] == self.targetMelody[i][0]) and (self.genes[i][1] == self.targetMelody[i][1])
         )
-
         return self.fitnessScore
-    
+
     def __repr__(self):
-        return f"Chromosome(fitness={self.fitnessScore}, genes={self.genes})"
+        #Formatting the genes to only one decimal place for the time
+        formatted_genes = [
+            [note, round(time, 1)] for note, time in self.genes
+        ]
+        return f"Chromosome(fitness={self.fitnessScore}, genes={formatted_genes})"
+
+
+
