@@ -40,8 +40,6 @@ class Chromosome:
         child = Chromosome(self.targetMelody, self.numOfRows, self.noteRange, self.timeRange)
         child.genes = childGenes
         
-        child.calculateFitness()
-        
         return child
     
     def calculateFitness(self):
