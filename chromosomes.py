@@ -1,5 +1,4 @@
-import random 
-from typing import List, Tuple
+import random
 
 class Chromosome:
     # Initializing a chromosome with random notes, range C4 to B4
