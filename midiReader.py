@@ -1,8 +1,10 @@
 from mido import MidiFile
 from pydub import AudioSegment
 from pydub.generators import Square
-from typing import List, Tuple
+from typing import List, Tuple # Just experimenting with types
 import numpy as np
+
+from geneticAlgorithm import GeneticAlgorithm
 
 def midiToFreq(midiNumber: int) -> float:
     # Formula for converting MIDI to frequency
@@ -20,7 +22,7 @@ def readMidiNotes(midiFilePath: str) -> List[Tuple[int, float]]:
         
         # 'note_on' indicates when a note/event starts
         if message.type == 'note_on' and message.velocity > 0:
-            notes.append((message.note, currentTime))
+            notes.append((message.note, round(currentTime, 1)))
 
     return notes
 
@@ -36,7 +38,7 @@ def createWavFromNotes(notes: List[Tuple[int, float]], outputPath: str, noteDura
     for noteNum, noteTime in notes:
         frequency = midiToFreq(noteNum)
 
-        # Generating a square wave for this note
+        # Generating a square wave for this note (square wave is punchy and popular for chiptunes)
         squareWave = Square(frequency)
         noteSegment = squareWave.to_audio_segment(
             duration=int(noteDuration * 1000),
@@ -46,7 +48,7 @@ def createWavFromNotes(notes: List[Tuple[int, float]], outputPath: str, noteDura
         # Applying fade in and out to prevent clicks
         noteSegment = noteSegment.fade_in(50).fade_out(50) # 50ms
 
-        # Right position at the correct time
+        # Right note at the correct time
         position = int(noteTime * 1000) # Converting to milliseconds
         baseAudio = baseAudio.overlay(noteSegment, position=position)
 
@@ -56,14 +58,19 @@ def createWavFromNotes(notes: List[Tuple[int, float]], outputPath: str, noteDura
 def main():
     try:
         # Reading the MIDI file
-        midiFilePath = "MIDIs\MK For Proj.mid"
+        midiFilePath = "MIDIs\MI For Proj.mid"
         notes = readMidiNotes(midiFilePath)
 
         print("Notes found!")
+        print(notes)
+
+        ga = GeneticAlgorithm(notes)
+        bestChromo = ga.evolve()
+        print(bestChromo.genes)
 
         # Creating the WAV file
-        outputPath = 'output.wav'
-        createWavFromNotes(notes, outputPath)
+        outputPath = 'MI output.wav'
+        createWavFromNotes(bestChromo.genes, outputPath)
         print(f"\nWAV file created successfully: {outputPath}")
     
     except FileNotFoundError:
