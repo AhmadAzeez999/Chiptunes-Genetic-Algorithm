@@ -28,7 +28,7 @@ class Chromosome:
 
         return geneArray
     
-    def mutate(self, mutationRate=1):
+    def mutate(self, mutationRate=0.5):
         if random.random() < mutationRate:
             randomIndex = random.randint(0, self.numOfRows - 1)
             self.genes[randomIndex] = [
