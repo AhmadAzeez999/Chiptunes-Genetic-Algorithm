@@ -58,7 +58,7 @@ def createWavFromNotes(notes: List[Tuple[int, float]], outputPath: str, noteDura
 def main():
     try:
         # Reading the MIDI file
-        midiFilePath = "MIDIs\Mission Impossible Melody.mid"
+        midiFilePath = "MIDIs\Mortal Kombat Melody.mid"
         notes = readMidiNotes(midiFilePath)
 
         print("Notes found!")
